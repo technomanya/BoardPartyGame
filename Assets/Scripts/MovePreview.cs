@@ -7,73 +7,64 @@ public class MovePreview : MonoBehaviour
     public List<Transform> previewListForTurn;
     public int moveAmount;
     
-    private PlayerController player;
-    void Start()
+    [SerializeField]private PlayerBaseController player;
+
+    public void PreviewMovingAi()
     {
-        player = GetComponent<PlayerController>();
+        for (int i = player.moveAmount; i > 0 ; i--)
+        {
+            var gridTile = transform.parent.GetComponent<GridTileData>();
+            if (gridTile && gridTile.possibleDirections.Length > 0)
+            {
+                var randomDirectionId = Random.Range(0, gridTile.possibleDirections.Length);
+                transform.LookAt(gridTile.possibleDirections[randomDirectionId]);
+                var transformLocalRotation = transform.localRotation;
+                transformLocalRotation.eulerAngles =
+                    new Vector3(0,transformLocalRotation.eulerAngles.y, 0);
+                transform.localRotation = transformLocalRotation;
+            
+                
+            }
+            Debug.Log("MovedAi "+ player.moveAmount);
+            PreviewMoving(transform.forward);
+        }
+        GameManager.Instance.MoveConfirm();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void PreviewMoving(Vector3 direction)
     {
         RaycastHit hit;
-        Vector3 directionTemp =Vector3.zero;
         bool isHit = false;
-        if(player.isTurn && !player.isMoving && Input.anyKeyDown)
+        isHit = Physics.Raycast(transform.position, direction, out hit, 1f);
+        //Debug.Log(isHit);
+        if (isHit && hit.collider.CompareTag("Tile"))
         {
-            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            if (previewListForTurn.Count == 0)
             {
-                directionTemp = transform.TransformDirection(Vector3.forward);
+                player.moveAmount--;
+                previewListForTurn.Add(hit.transform);
+                transform.parent = hit.transform;
+                transform.localPosition = Vector3.zero;
             }
-
-            if (Input.GetKey(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            else
             {
-                directionTemp = transform.TransformDirection(Vector3.back);
-            }
-
-            if (Input.GetKey(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                directionTemp = transform.TransformDirection(Vector3.right);
-            }
-
-            if (Input.GetKey(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                directionTemp = transform.TransformDirection(Vector3.left);
-            }
-
-            isHit = Physics.Raycast(transform.position, directionTemp, out hit, 1);
-            Debug.Log(isHit);
-            if (isHit && hit.collider.CompareTag("Tile"))
-            {
-                Debug.Log(hit.collider.name);
-                if (previewListForTurn.Count == 0)
+                if (player.moveAmount>0 && !previewListForTurn.Contains(hit.transform))
                 {
-                    moveAmount--;
+                    player.moveAmount--;
                     previewListForTurn.Add(hit.transform);
                     transform.parent = hit.transform;
                     transform.localPosition = Vector3.zero;
                 }
-                else
+                else if(previewListForTurn.Contains(hit.transform))
                 {
-                    if (moveAmount>0 && !previewListForTurn.Contains(hit.transform))
-                    {
-                        moveAmount--;
-                        previewListForTurn.Add(hit.transform);
-                        transform.parent = hit.transform;
-                        transform.localPosition = Vector3.zero;
-                    }
-                    else if(previewListForTurn.Contains(hit.transform))
-                    {
-                        moveAmount++;
-                        previewListForTurn.Remove(previewListForTurn[^1]);
-                        transform.parent = hit.transform;
-                        transform.localPosition = Vector3.zero;
-                    }
+                    player.moveAmount++;
+                    previewListForTurn.Remove(previewListForTurn[^1]);
+                    transform.parent = hit.transform;
+                    transform.localPosition = Vector3.zero;
                 }
-                
-
-                
             }
+                
         }
+        
     }
 }
