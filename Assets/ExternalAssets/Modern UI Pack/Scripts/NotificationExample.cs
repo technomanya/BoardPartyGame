@@ -20,12 +20,7 @@ namespace Michsky.UI.ModernUIPack
         public string animationNameIn;
         public string animationNameOut;
 
-        private bool isPlayed = false;
-
-        void Start()
-        {
-            //notificationObject.SetActive (false);
-        }
+        //private bool isPlayed = false;
 
         public void ShowNotification()
         {
