@@ -43,7 +43,7 @@ public class AiPlayerController : PlayerBaseController
         else 
         {
             UpdateCurrentDice(GameManager.Instance.basicDiceObj.GetComponent<DiceBehaviour>());
-            GameManager.Instance.specialDiceObj.SetActive(true);
+            GameManager.Instance.specialDiceObj.SetActive(false);
         }
 
         isTurn = true;
